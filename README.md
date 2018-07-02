@@ -1,10 +1,41 @@
-# SEDmaker
+SEDmaker
+======
 A quick python script to produce SEDs from BPASS models for a range of SFHs.
 
-## Still under work - only simple Star Formation Histories and BPASS models for now. Output is still formatted for HyperZ.
+# Still under work - only simple Star Formation Histories and BPASS models for now. Output is still formatted for HyperZ.
 
-## To work, please clone the git repo into the same directory as your BPASS downloaded files (or change paths in the code accordingly @ line 15) 
+### Installing SEDmaker 
 
-Check:
-- test_SFHs() to get a flavor of the range of SFH available
-- produce_grid_SED_HyperZ() gives a rough example of grid generation of SEDs. Modify the ranges of age, e-folding, slope (linear models) and metallicities as you wish. The output is only for HyperZ and gives you all necessary files (comprising the .param files).
+Provided you have the right Python (3.6) with distutils build, and the numpy and matplotlib, this should be as easy as:
+
+```
+$ git clone https://github.com/rameyer/SEDmaker
+$ cd SEDmaker
+$ python3 setup.py install
+$ cd ..
+$ python3
+>>> import pynbody
+```
+
+If this fails, you may need more detailed installation instruction. Please contact me!
+
+#### Getting started
+
+SEDmaker is a small package to help produce Spectral Energy Distributions based on the BPASS models (see  Eldridge, Stanway et al.,2017 and http://bpass.auckland.ac.nz/). In order to do so, SEDmaker has a range of Star Formation Histories that can be chosen from and adjusted for different age, e-folding time, slope of the Star Formation Rate (SFR) decrease etc... This is then supplemented by the different BPASS models for various Initial Mass Functions (IMF), metallicities and inclusion of binary star populations.
+
+To see the range of possible SFHs:
+
+```
+$ python3
+>>> import SEDmaker as sed
+>>> sed.SEDmaker.test_SHFs()
+```
+
+To produce a grid of HyperZ SEDs: 
+```
+$ python3
+>>> import SEDmaker as sed
+>>> sed.SEDmaker.produce_grid_SED_HyperZ()
+```
+
+ToDo: These will be more parametrized to allow the user to pick from the range of SFH listed [here](https://github.com/rameyer/SEDmaker/docs/functions.md). 
