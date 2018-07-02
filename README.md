@@ -4,6 +4,7 @@ A quick python script to produce SEDs from BPASS models for a range of SFHs.
 
 ## Still under work - only simple Star Formation Histories and BPASS models for now. Output is still formatted for HyperZ.
 
+
 ### Installing SEDmaker 
 
 Provided you have the right Python (3.6) with distutils build, and the numpy and matplotlib, this should be as easy as:
@@ -18,6 +19,11 @@ $ python3
 ```
 
 If this fails, you may need more detailed installation instruction. Please contact me!
+
+### Downloading the BPASS models
+
+You need first to download the BPASS models (Stanway, Eldridge et al., 2017; http://bpass.auckland.ac.nz/) before SEDmaker works. Please unpack each IMF folder in the BPASS folder provided in the git repo. 
+
 
 #### Getting started
 
