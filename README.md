@@ -7,7 +7,7 @@ A quick python script to produce SEDs from BPASS models for a range of SFHs.
 
 ### Installing SEDmaker 
 
-Provided you have the right Python (3.6) with distutils build, and the numpy and matplotlib, this should be as easy as:
+Provided you have the right Python (3.6) with the distutils build, and updated numpy and matplotlib packages, this should be as easy as:
 
 ```
 $ git clone https://github.com/rameyer/SEDmaker
