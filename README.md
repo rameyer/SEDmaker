@@ -2,7 +2,7 @@ SEDmaker
 ======
 A quick python script to produce SEDs from BPASS models for a range of SFHs.
 
-# Still under work - only simple Star Formation Histories and BPASS models for now. Output is still formatted for HyperZ.
+## Still under work - only simple Star Formation Histories and BPASS models for now. Output is still formatted for HyperZ.
 
 ### Installing SEDmaker 
 
@@ -38,4 +38,4 @@ $ python3
 >>> sed.SEDmaker.produce_grid_SED_HyperZ()
 ```
 
-ToDo: These will be more parametrized to allow the user to pick from the range of SFH listed [here](https://github.com/rameyer/SEDmaker/docs/functions.md). 
+ToDo: These will be more parametrized to allow the user to pick from the range of SFH listed [here](https://github.com/rameyer/SEDmaker/blob/master/docs/functions.md). 
