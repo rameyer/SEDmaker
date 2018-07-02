@@ -14,7 +14,7 @@ $ cd SEDmaker
 $ python3 setup.py install
 $ cd ..
 $ python3
->>> import pynbody
+>>> import SEDmaker
 ```
 
 If this fails, you may need more detailed installation instruction. Please contact me!
