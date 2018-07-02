@@ -1,18 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pkg_resources
 
 ### Kroupa IMF (imf135_300) slope 0.1-0.5 : -1.3 , 0.5-300: -2.30 . Extends to 300 M_sol
+
+PACKAGE_PATH = str(np.genfromtxt(pkg_resources.resource_filename('SEDmaker', 'data/index_data.txt'),dtype='str'))
+
 IMF = 'imf135_300'
 
 binaries = True
-
-z_met = '001'
-
-SFR = 20
-
-age = 50
-
-template_hyperz_dir = '/Users/RomainMeyer/Applications/v12.3_public/templates'
 
 def _agebins_BPASS():
 	'''
@@ -153,17 +149,19 @@ def test_SFHs():
 		--
 	'''
 
-	if binaries:
-		spectra_single = np.loadtxt('./BPASS/BPASSv2.1_'+ IMF +'/spectra.z' + z_met 
-										+ '-bin.dat')[0:100000:20]
+	z_met = '001'
+	
+	if binaries: 
+		spectra_single = np.loadtxt(PACKAGE_PATH+'/BPASS/BPASSv2.1_'+ IMF +'/spectra-bin.z' + z_met 
+										+ '.dat')[0:100000:20]
 	else:
-		spectra_single = np.loadtxt('./BPASS/BPASSv2.1_'+ IMF +'/spectra.z' + z_met 
-										+ '-bin.dat')[0:100000:20]
+		spectra_single = np.loadtxt(PACKAGE_PATH+'/BPASS/BPASSv2.1_'+ IMF +'/spectra.z' + z_met 
+										+ '.dat')[0:100000:20]
 
 	_ , SFH_1 = SFH_constant(30, spectrafile= spectra_single)
 	_ , SFH_2 = SFH_constant(10, spectrafile= spectra_single, SFR = 10)
 	_ , SFH_3 = SFH_linear(age = 50,slope = 2, spectrafile= spectra_single,SFR = 1)
-	_ , SFH_4 = SFH_linear(age = 10,tau = -1, spectrafile= spectra_single,SFR = 10)
+	_ , SFH_4 = SFH_linear(age = 10,slope = -1, spectrafile= spectra_single,SFR = 10)
 	_ , SFH_5 = SFH_exponential(age = 20,tau = 10, spectrafile= spectra_single,SFR=1)
 	_ , SFH_6 = SFH_exponential(age = 20,tau = -5, spectrafile= spectra_single, SFR = 1)
 
@@ -176,8 +174,8 @@ def test_SFHs():
 	plt.plot(age_bins,SFH_5,label = r'Exponential 20 Myr, $\tau$ = 10')
 	plt.plot(age_bins,SFH_6,label = r'Exponential 20 Myr, $\tau$ = -5')
 	plt.legend()
-	plt.xlim(1,400)
-	#plt.ylim(0,10)
+	plt.xlim(1,100)
+	plt.ylim(0,20)
 	if binaries:
 		plt.title('BPASS SFH, binaries included')
 	else:
@@ -196,16 +194,16 @@ def produce_grid_SED_HyperZ():
 	Outputs:
 		-- (save the SEDs as text files in given directory)
 	'''
-	f = open('./SED/BPASS_imf135_300_expi.param','w+')
-	f_nobin = open('./SED/BPASS_imf135_300_expi_nobin.param','w+')
-	f_bin = open('./SED/BPASS_imf135_300_expi_bin.param','w+')
+	f = open(PACKAGE_PATH+'/SED/BPASS_imf135_300_expi.param','w+')
+	f_nobin = open(PACKAGE_PATH+'/SED/BPASS_imf135_300_expi_nobin.param','w+')
+	f_bin = open(PACKAGE_PATH+'/SED/BPASS_imf135_300_expi_bin.param','w+')
 	for z_met in ['em5','em4','001','002','003','004','006','010','014','020','030','040']:
 		for age  in [10,20,50,100,200,400]:
 			for tau in [0.03,0.06,0.1,0.2,0.4,0.8,1.5,3,5,10]: 
 
-				spectra_single = np.loadtxt('./BPASS/BPASSv2.1_'+ IMF +'/spectra.z' + z_met 
+				spectra_single = np.loadtxt(PACKAGE_PATH+'/BPASS/BPASSv2.1_'+ IMF +'/spectra.z' + z_met 
 											+ '.dat')[0:6000]
-				spectra_bin = np.loadtxt('./BPASS/BPASSv2.1_'+ IMF +'/spectra-bin.z'+ z_met 
+				spectra_bin = np.loadtxt(PACKAGE_PATH+'/BPASS/BPASSv2.1_'+ IMF +'/spectra-bin.z'+ z_met 
 											+ '.dat')[0:6000]
 
 				SED_single,_ = SFH_exponential(age=age,tau = tau*1e3,spectrafile=spectra_single)
@@ -217,19 +215,19 @@ def produce_grid_SED_HyperZ():
 				F_lambda_single = SED_single #/ (SED_single[2000])
 				F_lambda_bin = SED_bin  #/ (SED_bin[2000])
 								
-				np.savetxt('./SED/imf135_300/SFH_exp_a' + str(age) + '_t' + str(tau)+ '_z' + z_met + '.sed', 
+				np.savetxt(PACKAGE_PATH+'/SED/imf135_300/SFH_exp_a' + str(age) + '_t' + str(tau)+ '_z' + z_met + '.sed', 
 						   np.transpose(np.vstack((wavelength,F_lambda_single))))
 				
-				np.savetxt('./SED/imf135_300/SFH_exp_a' + str(age) + '_t' + str(tau)+ '_z' + z_met + '_bin.sed', 
+				np.savetxt(PACKAGE_PATH+'/SED/imf135_300/SFH_exp_a' + str(age) + '_t' + str(tau)+ '_z' + z_met + '_bin.sed', 
 						   np.transpose(np.vstack((wavelength,F_lambda_bin))))
 
-				f.write(template_hyperz_dir + '/SED/imf135_300/SFH_exp_a' + str(age) + '_t' + str(tau) +  '_z' 
+				f.write(PACKAGE_PATH + '/SED/imf135_300/SFH_exp_a' + str(age) + '_t' + str(tau) +  '_z' 
 					    + z_met + '.sed   AS  \n')
-				f_bin.write(template_hyperz_dir + '/SED/imf135_300/SFH_exp_a' + str(age) + '_t' + str(tau)+ '_z' 
+				f_bin.write(PACKAGE_PATH+'/SED/imf135_300/SFH_exp_a' + str(age) + '_t' + str(tau)+ '_z' 
 					    + z_met + '_bin.sed   AS  \n')
-				f_nobin.write(template_hyperz_dir + '/SED/imf135_300/SFH_exp_a' + str(age) + '_t' + str(tau)+ '_z' 
+				f_nobin.write(PACKAGE_PATH+'/SED/imf135_300/SFH_exp_a' + str(age) + '_t' + str(tau)+ '_z' 
 					    + z_met + '.sed   AS  \n')
-				f.write(template_hyperz_dir + '/SED/imf135_300/SFH_exp_a' + str(age)+ '_t' + str(tau) + '_z' 
+				f.write(PACKAGE_PATH+'/SED/imf135_300/SFH_exp_a' + str(age)+ '_t' + str(tau) + '_z' 
 					    + z_met + '_bin.sed   AS \n')
 
 
