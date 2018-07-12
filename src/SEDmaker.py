@@ -53,17 +53,6 @@ def _compute_SED(SFR_array,spectrafile):
 
 	return np.sum(spectrafile*agebins_yr*SFR_array, axis = 1)
 
-	'''
-	for i  in range(52):
-		if i == 0:
-			dt = 10**6.05
-			SED = spectrafile[:,i+1]*dt*SFR_array[i] 
-		else:
-			dt = 10**(6.15+0.1*i) - 10**(6.05+0.1*i)
-			SED += spectrafile[:,i+1]*dt*SFR_array[i]
-
-	return SED
-	'''
 
 def SFH_constant(age,spectrafile,SFR =1):
 	'''
@@ -140,6 +129,19 @@ def SFH_exponential(age,tau,spectrafile,SFR=1):
 
 	return _compute_SED(SFR_array=SFR_array, spectrafile=spectrafile), SFR_array
 
+def _check_BPASS_metallicity_syntax(metallicity):
+	'''
+	A private function to check the input metallicity string does match with the BPASS
+	syntax.
+	:param metallicity: string
+	:return: True / False Boolean
+	'''
+	if metallicity in ['em5','em4','001','002','003','004','006','010','014','020','030','040']:
+		return True
+	else:
+		return False
+
+
 def test_SFHs():
 	'''
 	A private test function to show the range of SFHs available with this code. 
@@ -152,7 +154,7 @@ def test_SFHs():
 	z_met = '001'
 	
 	if binaries: 
-		spectra_single = np.loadtxt(PACKAGE_PATH+'/BPASS/BPASSv2.1_'+ IMF +'/spectra-bin.z' + z_met 
+		spectra_single = np.loadtxt(PACKAGE_PATH+'/BPASS/BPASSv2.1_'+ IMF +'/spectra-bin.z' + z_met
 										+ '.dat')[0:100000:20]
 	else:
 		spectra_single = np.loadtxt(PACKAGE_PATH+'/BPASS/BPASSv2.1_'+ IMF +'/spectra.z' + z_met 
@@ -185,49 +187,98 @@ def test_SFHs():
 	plt.show()
 
 
-def produce_grid_SED_HyperZ():
+def produce_grid_SED_HyperZ(type = 'lin', age_array = [10], metallicity_array = ['001'],
+                            params = [1], min_wavelength = 0, max_wavelength = 200,
+							sampling = 1, imf= 'imf135_300', sed_save_path = PACKAGE_PATH+'/SED/',
+                            BPASSv = '2.1'):
 	''' 
 	An example of a grid production of SEDs in HyperZ specific format. 
 	Still under work to be fully determined from inputs.
 	Inputs:
-		--
+		type: either constant, linear, exponential
+		age_array: the array of ages of the galaxies you want to produce the SEDs of
+		metallicity_array: metallicities of the SEDs, in the BPASS format
+		params: array of slope(e-folding time) for the linear(exponential) SFH case.
+		min_wavelength: minimum wavelength of the output SEDs (integer)
+		max_wavelength: maximum wavelength of the output SEDs (integer)
+		sampling: parameter to undersample the BPASS SEDs by 1 (no sampling), 2,3,4,.. Integer.
+		imf: The imf to use. Must be one of those used by the BPASS team
+		sed_save_path: The directory to save the SEDs, by default the SED
+		BPASSv: BPASS version, in case you have many.
 	Outputs:
-		-- (save the SEDs as text files in given directory)
+		-- (save the SEDs as text files in given directory + hyperz .param files)
 	'''
-	f = open(PACKAGE_PATH+'/SED/BPASS_imf135_300_expi.param','w+')
-	f_nobin = open(PACKAGE_PATH+'/SED/BPASS_imf135_300_expi_nobin.param','w+')
-	f_bin = open(PACKAGE_PATH+'/SED/BPASS_imf135_300_expi_bin.param','w+')
-	for z_met in ['em5','em4','001','002','003','004','006','010','014','020','030','040']:
-		for age  in [10,20,50,100,200,400]:
-			for tau in [0.03,0.06,0.1,0.2,0.4,0.8,1.5,3,5,10]: 
 
-				spectra_single = np.loadtxt(PACKAGE_PATH+'/BPASS/BPASSv2.1_'+ IMF +'/spectra.z' + z_met 
-											+ '.dat')[0:6000]
-				spectra_bin = np.loadtxt(PACKAGE_PATH+'/BPASS/BPASSv2.1_'+ IMF +'/spectra-bin.z'+ z_met 
-											+ '.dat')[0:6000]
+	if type == 'cst':
+		print('Constant SFR chosen')
+	elif type == 'lin':
+		print('Linear SFR chosen')
+	elif type == 'exp':
+		print('Exponential SFR chosen')
+	else:
+		raise Exception('Aborted: unrecognized SFR evolution type supplied.')
 
-				SED_single,_ = SFH_exponential(age=age,tau = tau*1e3,spectrafile=spectra_single)
-				SED_bin,_ = SFH_exponential(age=age,tau = tau*1e3,spectrafile=spectra_bin)
+	if not(imf in ['imf135_300','imf100_100','imf100_300','imf_135_100','imf135all_100','imf170_100','imf_170_300']):
+		raise Exception('Aborted: unrecognized BPASS IMF supplied.')
 
-				wavelength = np.linspace(1,1e5,1e5)[0:6000]
+	f = open(PACKAGE_PATH+'/files_hyperz/BPASS_'+imf+'_'+type+'_all.param','w+')
+	f_nobin = open(PACKAGE_PATH+'/files_hyperz/BPASS_'+imf+'_'+type+'_nobin.param','w+')
+	f_bin = open(PACKAGE_PATH+'/files_hyperz/BPASS_'+imf+'_'+type+'_bin.param','w+')
+
+	metallicity_array = [m if _check_BPASS_metallicity_syntax(m)
+	                       else print('Rejected metallicity input ' + m + ' not a valid BPASS denominator. Please use either em5 em4 001 002 003 004 006 010 014 020 030 040' )
+	                       for m in metallicity_array ]
+	age_array = [a if a else print('Rejected negative age input' + str(a)) for a in age_array]
+
+
+	sampling = int(sampling)
+	min_wavelength = int(min_wavelength)
+	max_wavelength = int(max_wavelength)
+
+
+	for z_met in metallicity_array:
+		for age  in age_array:
+			for param in params:
+
+				spectra_single = np.loadtxt(PACKAGE_PATH+'/BPASS/BPASSv'+BPASSv+'_'+ imf +'/spectra.z' + z_met
+											+ '.dat')[min_wavelength:max_wavelength:sampling]
+				spectra_bin = np.loadtxt(PACKAGE_PATH+'/BPASS/BPASSv'+BPASSv+'_'+ imf +'/spectra-bin.z'+ z_met
+											+ '.dat')[min_wavelength:max_wavelength:sampling]
+
+				if type == 'cst':
+					SED_single, _ = SFH_constant(age=age, spectrafile=spectra_single)
+					SED_bin, _ = SFH_constant(age=age,spectrafile=spectra_bin)
+				elif type == 'lin':
+					SED_single, _ = SFH_linear(age=age, slope = param,
+					                                spectrafile=spectra_single)
+					SED_bin, _ = SFH_linear(age=age,slope =param,
+					                             spectrafile=spectra_bin)
+				elif type == 'exp':
+					SED_single, _ = SFH_exponential(age=age, tau=param * 1e3,
+					                                spectrafile=spectra_single)
+					SED_bin, _ = SFH_exponential(age=age, tau=param * 1e3,
+					                             spectrafile=spectra_bin)
+
+				wavelength = np.linspace(1,1e5,1e5)[min_wavelength:max_wavelength:sampling]
+
 
 				# Normalization (if you wish)
 				F_lambda_single = SED_single #/ (SED_single[2000])
 				F_lambda_bin = SED_bin  #/ (SED_bin[2000])
 								
-				np.savetxt(PACKAGE_PATH+'/SED/imf135_300/SFH_exp_a' + str(age) + '_t' + str(tau)+ '_z' + z_met + '.sed', 
+				np.savetxt(sed_save_path+'/'+imf+'_SFH_'+type+'_a' + str(age) + '_p' + str(param) +  '_z'  + z_met + '.sed',
 						   np.transpose(np.vstack((wavelength,F_lambda_single))))
 				
-				np.savetxt(PACKAGE_PATH+'/SED/imf135_300/SFH_exp_a' + str(age) + '_t' + str(tau)+ '_z' + z_met + '_bin.sed', 
+				np.savetxt(sed_save_path+'/'+imf+'_SFH_'+type+'_a' + str(age) + '_p' + str(param) +  '_z' + z_met + '_bin.sed',
 						   np.transpose(np.vstack((wavelength,F_lambda_bin))))
 
-				f.write(PACKAGE_PATH + '/SED/imf135_300/SFH_exp_a' + str(age) + '_t' + str(tau) +  '_z' 
+				f.write(sed_save_path+'/'+imf+'_SFH_'+type+'_a' + str(age) + '_p' + str(param) +  '_z'
 					    + z_met + '.sed   AS  \n')
-				f_bin.write(PACKAGE_PATH+'/SED/imf135_300/SFH_exp_a' + str(age) + '_t' + str(tau)+ '_z' 
+				f_bin.write(sed_save_path+'/'+imf+'_SFH_'+type+'_a' + str(age) + '_p' + str(param) +  '_z'
 					    + z_met + '_bin.sed   AS  \n')
-				f_nobin.write(PACKAGE_PATH+'/SED/imf135_300/SFH_exp_a' + str(age) + '_t' + str(tau)+ '_z' 
+				f_nobin.write(sed_save_path+'/'+imf+'_SFH_'+type+'_a' + str(age) + '_p' + str(param) +  '_z'
 					    + z_met + '.sed   AS  \n')
-				f.write(PACKAGE_PATH+'/SED/imf135_300/SFH_exp_a' + str(age)+ '_t' + str(tau) + '_z' 
+				f.write(sed_save_path+'/'+imf+'_SFH_'+type+'_a' + str(age) + '_p' + str(param) +  '_z'
 					    + z_met + '_bin.sed   AS \n')
 
-
+	print ('Finished!')

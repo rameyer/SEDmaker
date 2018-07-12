@@ -9,8 +9,8 @@ Setup script
 ##### Write a short file to locate BPASS files and avoid copying them
 import os
 f = open('./src/data/index_data.txt','w')
-f.write(os.getcwd() )
-f.close
+f.write(os.getcwd())
+f.close()
 
 from distutils.core import setup 
 setup(name='SEDmaker',

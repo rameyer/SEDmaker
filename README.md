@@ -37,9 +37,29 @@ $ python3
 >>> sed.test_SHFs()
 ```
 
-To produce a grid of HyperZ SEDs: 
+To produce a grid of HyperZ SEDs, call the following function:
 ```
->>> sed.produce_grid_SED_HyperZ()
+def produce_grid_SED_HyperZ(type = 'constant', age_array = [10], metallicity_array = ['001'],
+                            params = [1], min_wavelength = 0, max_wavelength = 6000,
+							sampling = 1, imf= 'imf135_300', sed_save_path = PACKAGE_PATH+'/SED/',
+                            BPASSv = '2.1'):
+	''' 
+	An example of a grid production of SEDs in HyperZ specific format.
+	Still under work to be fully determined from inputs.
+	Inputs:
+		type: either constant, linear, exponential
+		age_array: the array of ages of the galaxies you want to produce the SEDs of
+		metallicity_array: metallicities of the SEDs, in the BPASS format
+		params: array of slope(e-folding time) for the linear(exponential) SFH case.
+		min_wavelength: minimum wavelength of the output SEDs (integer)
+		max_wavelength: maximum wavelength of the output SEDs (integer)
+		sampling: parameter to undersample the BPASS SEDs by 1 (no sampling), 2,3,4,.. Integer.
+		imf: The imf to use. Must be one of those used by the BPASS team
+		sed_save_path: The directory to save the SEDs, by default the SED
+		BPASSv: BPASS version, in case you have many.
+	Outputs:
+		-- (save the SEDs as text files in given directory + hyperz .param files)
+	'''
 ```
 
 ToDo: These will be more parametrized to allow the user to pick from the range of SFH listed [here](https://github.com/rameyer/SEDmaker/blob/master/docs/functions.md). 
