@@ -42,7 +42,7 @@ To produce a grid of HyperZ SEDs, call the following function:
 def produce_grid_SED_HyperZ(type = 'constant', age_array = [10], metallicity_array = ['001'],
                             params = [1], min_wavelength = 0, max_wavelength = 6000,
 							sampling = 1, imf= 'imf135_300', sed_save_path = PACKAGE_PATH+'/SED/',
-                            BPASSv = '2.1'):
+							BPASSv = '2.1'):
 	''' 
 	An example of a grid production of SEDs in HyperZ specific format.
 	Still under work to be fully determined from inputs.
