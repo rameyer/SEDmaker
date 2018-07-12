@@ -61,5 +61,3 @@ def produce_grid_SED_HyperZ(type = 'constant', age_array = [10], metallicity_arr
 		-- (save the SEDs as text files in given directory + hyperz .param files)
 	'''
 ```
-
-ToDo: These will be more parametrized to allow the user to pick from the range of SFH listed [here](https://github.com/rameyer/SEDmaker/blob/master/docs/functions.md). 
